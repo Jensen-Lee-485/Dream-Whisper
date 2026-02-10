@@ -57,7 +57,7 @@ export default function ShareModal({ open, onClose, onConfirm }: ShareModalProps
         <div className="text-center mb-6">
           <div className="text-3xl mb-3">&#x2728;</div>
           <h3 className="text-lg text-indigo-100 font-medium mb-1">投递到集体潜意识</h3>
-          <p className="text-indigo-300/50 text-sm">选择一个匿名身份，让梦境汇入星网</p>
+          <p className="text-indigo-300/50 text-sm">选择一个匿名身份，让梦境汇入梦网</p>
         </div>
 
         <div className="mb-6">

@@ -157,7 +157,7 @@ export default function ShareButton({ dreamId, dream, analysis, imageUrl, onNavi
             className="flex items-center gap-1.5 text-xs text-indigo-400/70 hover:text-indigo-300 transition-colors"
             style={{ animation: 'fadeIn 0.5s ease-out' }}
           >
-            前往星网社区查看
+            前往梦网社区查看
             <ArrowRight className="w-3 h-3" />
           </button>
         )}

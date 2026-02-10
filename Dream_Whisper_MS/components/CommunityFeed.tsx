@@ -68,7 +68,7 @@ export default function CommunityFeed() {
             此刻，共有 <span className="font-bold text-purple-300">{onlineCount}</span> 人正在这片星空下共享他们的梦境。
           </span>
         </div>
-        <h2 className="text-2xl text-indigo-100 font-light tracking-wide mb-2">星网</h2>
+        <h2 className="text-2xl text-indigo-100 font-light tracking-wide mb-2">梦网</h2>
         <p className="text-indigo-400/50 text-sm">来自不同造梦者的潜意识碎片</p>
       </div>
 
@@ -76,7 +76,7 @@ export default function CommunityFeed() {
       {loading && (
         <div className="text-center py-16">
           <div className="w-10 h-10 border-3 border-purple-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-indigo-300/50 text-sm">正在连接星网...</p>
+          <p className="text-indigo-300/50 text-sm">正在连接梦网...</p>
         </div>
       )}
 
@@ -84,8 +84,8 @@ export default function CommunityFeed() {
       {!loading && dreams.length === 0 && (
         <div className="text-center py-20 bg-indigo-950/10 rounded-3xl border border-indigo-500/5 border-dashed">
           <Globe className="w-12 h-12 text-indigo-500/25 mx-auto mb-4" />
-          <h3 className="text-lg text-indigo-200/70 mb-2">星网尚无连接</h3>
-          <p className="text-indigo-400/40 text-sm">解析一个梦境后，点击"同步至星网"成为第一位造梦者</p>
+          <h3 className="text-lg text-indigo-200/70 mb-2">梦网尚无连接</h3>
+          <p className="text-indigo-400/40 text-sm">解析一个梦境后，点击"同步至梦网"成为第一位造梦者</p>
         </div>
       )}
 

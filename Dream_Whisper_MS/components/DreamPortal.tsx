@@ -23,17 +23,23 @@ function generateParticles(count: number) {
 export default function DreamPortal({ onActivate }: DreamPortalProps) {
   const [hovered, setHovered] = useState(false);
   const [activated, setActivated] = useState(false);
-  const [particles] = useState(() => generateParticles(80));
-  const [vortexParticles] = useState(() =>
-    Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      angle: (i / 40) * Math.PI * 2,
-      radius: 80 + Math.random() * 160,
-      size: 1 + Math.random() * 2,
-      speed: 0.5 + Math.random() * 1.5,
-    }))
-  );
+  const [particles, setParticles] = useState<ReturnType<typeof generateParticles>>([]);
+  const [vortexParticles, setVortexParticles] = useState<{ id: number; angle: number; radius: number; size: number; speed: number }[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 仅在客户端生成随机粒子，避免 SSR hydration 不匹配
+  useEffect(() => {
+    setParticles(generateParticles(80));
+    setVortexParticles(
+      Array.from({ length: 40 }, (_, i) => ({
+        id: i,
+        angle: (i / 40) * Math.PI * 2,
+        radius: 80 + Math.random() * 160,
+        size: 1 + Math.random() * 2,
+        speed: 0.5 + Math.random() * 1.5,
+      }))
+    );
+  }, []);
 
   const handleActivate = useCallback(() => {
     if (activated) return;
@@ -90,7 +96,7 @@ export default function DreamPortal({ onActivate }: DreamPortalProps) {
             }
             transition={
               activated
-                ? { duration: 1.2, ease: 'easeIn', delay: Math.random() * 0.4 }
+                ? { duration: 1.2, ease: 'easeIn', delay: (p.id % 10) * 0.04 }
                 : {
                     duration: hovered ? p.duration * 0.5 : p.duration,
                     repeat: Infinity,

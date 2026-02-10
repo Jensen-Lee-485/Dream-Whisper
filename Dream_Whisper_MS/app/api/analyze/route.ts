@@ -27,6 +27,13 @@ You MUST output ONLY a valid JSON object (no markdown, no extra text). Ensure **
    - spirituality (Connection to self/universe)
    - realism (Connection to reality)
    Example: {"creativity": 80, "logic": 40, "emotion": 90, "spirituality": 60, "realism": 30}
+8. mbti_traits: An object containing scores (0-100) for 4 bipolar MBTI dimensions inferred from the dream content:
+   - extroversion: 0=extremely introverted, 100=extremely extroverted (外向 vs 内向)
+   - intuition: 0=extremely sensing, 100=extremely intuitive (直觉 vs 感觉)
+   - thinking: 0=extremely feeling, 100=extremely thinking (思考 vs 情感)
+   - judging: 0=extremely perceiving, 100=extremely judging (判断 vs 知觉)
+   Analyze the dream's themes, interaction patterns, and narrative style to score each dimension.
+   Example: {"extroversion": 30, "intuition": 75, "thinking": 40, "judging": 55}
 `;
 
 export async function POST(req: Request) {
@@ -75,6 +82,16 @@ export async function POST(req: Request) {
         }
 
         const analysis = JSON.parse(jsonStr);
+
+        // 将 mbti_traits 合并到 personality_traits 中
+        if (analysis.mbti_traits && analysis.personality_traits) {
+            analysis.personality_traits.extroversion = analysis.mbti_traits.extroversion;
+            analysis.personality_traits.intuition = analysis.mbti_traits.intuition;
+            analysis.personality_traits.thinking = analysis.mbti_traits.thinking;
+            analysis.personality_traits.judging = analysis.mbti_traits.judging;
+            delete analysis.mbti_traits;
+        }
+
         return NextResponse.json(analysis);
     } catch (error) {
         console.error('Dream analysis error:', error);

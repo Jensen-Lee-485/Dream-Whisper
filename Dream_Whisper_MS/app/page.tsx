@@ -30,11 +30,11 @@ type ViewState = 'portal' | 'home' | 'analyze' | 'persona' | 'calendar' | 'commu
 // 各选项卡对应的背景主色调：从深紫色渐变到紫罗兰色
 const TAB_BG_COLORS: Record<ViewState, string> = {
   portal: '#0a0918',
-  home: '#0d0b1e',
-  analyze: '#110e2a',
-  persona: '#171038',
-  calendar: '#1d1346',
-  community: '#241654',
+  home: '#1a0b3d',
+  analyze: '#1d0e45',
+  persona: '#241250',
+  calendar: '#2a165a',
+  community: '#4a2cb4',
 };
 
 export default function Home() {
@@ -423,7 +423,7 @@ export default function Home() {
             }`}
         >
           <Globe className="w-3 h-3" />
-          星网
+          梦网
         </button>
       </nav>
       )}
