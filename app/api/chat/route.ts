@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+// 临时设置 OPENAI_API_KEY 以避免 SDK 初始化错误
+process.env.OPENAI_API_KEY = process.env.DASHSCOPE_API_KEY || 'dummy-key';
+
 const openai = new OpenAI({
     apiKey: process.env.DASHSCOPE_API_KEY,
     baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',

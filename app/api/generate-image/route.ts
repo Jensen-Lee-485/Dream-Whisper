@@ -16,7 +16,15 @@ async function pollForImage(taskId: string, apiKey: string, maxAttempts = 30): P
             },
         });
 
-        const data = await response.json();
+        const responseData = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseData);
+        } catch (parseError) {
+            console.error('JSON parsing error during image polling:', parseError);
+            console.error('Raw response:', responseData);
+            return null;
+        }
         // console.log('轮询状态:', data.output?.task_status);
 
         if (data.output?.task_status === 'SUCCEEDED') {
@@ -79,7 +87,18 @@ export async function POST(req: Request) {
             }),
         });
 
-        const data = await response.json();
+        const responseData = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseData);
+        } catch (parseError) {
+            console.error('JSON parsing error in image generation API response:', parseError);
+            console.error('Raw response:', responseData);
+            return NextResponse.json(
+                { error: '图像生成服务返回格式错误' },
+                { status: response.status || 500 }
+            );
+        }
 
         if (!response.ok) {
             console.error('API 错误:', data);

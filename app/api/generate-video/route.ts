@@ -35,7 +35,15 @@ async function pollForVideo(taskId: string, apiKey: string, maxAttempts = 120): 
             },
         });
 
-        const data = await response.json();
+        const responseData = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseData);
+        } catch (parseError) {
+            console.error('JSON parsing error during video polling:', parseError);
+            console.error('Raw response:', responseData);
+            return null;
+        }
         console.log('轮询状态:', data.task_status);
 
         if (data.task_status === 'SUCCESS') {
@@ -98,7 +106,18 @@ export async function POST(req: Request) {
             }),
         });
 
-        const data = await response.json();
+        const responseData = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseData);
+        } catch (parseError) {
+            console.error('JSON parsing error in video generation API response:', parseError);
+            console.error('Raw response:', responseData);
+            return NextResponse.json(
+                { error: '视频生成服务返回格式错误' },
+                { status: response.status || 500 }
+            );
+        }
 
         if (!response.ok) {
             console.error('API 错误:', data);

@@ -3,8 +3,9 @@ import { NextResponse } from 'next/server';
 
 // 使用智谱 GLM API（兼容 OpenAI 格式）
 const openai = new OpenAI({
-    apiKey: process.env.GLM_API_KEY,
+    apiKey: process.env.GLM_API_KEY || '',
     baseURL: 'https://open.bigmodel.cn/api/paas/v4',
+    dangerouslyAllowBrowser: true,
 });
 
 const SYSTEM_PROMPT = `You are a professional dream analyst, integrating Jungian and Freudian psychoanalytic theories.
@@ -66,7 +67,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: '分析失败，请重试' }, { status: 500 });
         }
 
-        const analysis = JSON.parse(content);
+        let analysis;
+        try {
+            analysis = JSON.parse(content);
+        } catch (parseError) {
+            console.error('JSON parsing error:', parseError);
+            console.error('Raw content:', content);
+            return NextResponse.json({ error: '分析结果格式错误，请重试' }, { status: 500 });
+        }
+        
         return NextResponse.json(analysis);
     } catch (error) {
         console.error('Dream analysis error:', error);

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Moon, AlertCircle, CloudMoon, Sparkles as SparklesIcon } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Moon, AlertCircle, CloudMoon, Sparkles as SparklesIcon, Globe } from 'lucide-react';
 import Link from 'next/link';
 import DreamInput from '@/components/DreamInput';
 import AnalysisResult from '@/components/AnalysisResult';
@@ -9,6 +9,9 @@ import DreamMedia from '@/components/DreamMedia';
 import StarField from '@/components/StarField';
 import PersonaRadar from '@/components/PersonaRadar';
 import DreamHistory from '@/components/DreamHistory';
+import ShareButton from '@/components/ShareButton';
+import CommunityFeed from '@/components/CommunityFeed';
+import DreamPortal from '@/components/DreamPortal';
 import { DreamStorage, PersonalityTraits, DreamRecord } from '@/utils/dreamStorage';
 
 interface AnalysisData {
@@ -21,10 +24,11 @@ interface AnalysisData {
   personality_traits?: PersonalityTraits;
 }
 
-type ViewState = 'home' | 'analyze' | 'persona';
+type ViewState = 'portal' | 'home' | 'analyze' | 'persona' | 'community';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<ViewState>('home');
+  const [activeTab, setActiveTab] = useState<ViewState>('portal');
+  const [portalFading, setPortalFading] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -47,6 +51,14 @@ export default function Home() {
     const dreams = DreamStorage.getDreams();
     setHistory(dreams);
     setPersona(DreamStorage.calculatePersona(dreams));
+  }, []);
+
+  // Portal -> Home 渐变过渡
+  const handlePortalActivate = useCallback(() => {
+    setPortalFading(true);
+    // 先切视图（此时被遮罩覆盖），再渐隐遮罩
+    setTimeout(() => setActiveTab('home'), 600);
+    setTimeout(() => setPortalFading(false), 1800);
   }, []);
 
   // Handle selecting a dream from history
@@ -82,7 +94,17 @@ export default function Home() {
         body: JSON.stringify({ messages }),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonError) {
+        console.error('JSON解析错误:', jsonError);
+        console.error('响应状态:', res.status);
+        console.error('响应头:', [...res.headers.entries()]);
+        const text = await res.text();
+        console.error('响应内容:', text.substring(0, 200) + '...');
+        throw new Error(`服务器返回了无效的响应格式。状态码: ${res.status}`);
+      }
 
       if (!res.ok) {
         throw new Error(data.error || '分析失败');
@@ -134,7 +156,17 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: analysis.image_prompt }),
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonError) {
+        console.error('JSON解析错误:', jsonError);
+        console.error('响应状态:', res.status);
+        console.error('响应头:', [...res.headers.entries()]);
+        const text = await res.text();
+        console.error('响应内容:', text.substring(0, 200) + '...');
+        throw new Error(`服务器返回了无效的响应格式。状态码: ${res.status}`);
+      }
       if (!res.ok) throw new Error(data.error || '图像生成失败');
 
       const newImageUrl = data.imageUrl;
@@ -164,7 +196,17 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl, prompt: analysis?.image_prompt }),
       });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (jsonError) {
+        console.error('JSON解析错误:', jsonError);
+        console.error('响应状态:', res.status);
+        console.error('响应头:', [...res.headers.entries()]);
+        const text = await res.text();
+        console.error('响应内容:', text.substring(0, 200) + '...');
+        throw new Error(`服务器返回了无效的响应格式。状态码: ${res.status}`);
+      }
       if (!res.ok) throw new Error(data.error || '视频生成失败');
 
       const newVideoUrl = data.videoUrl;
@@ -186,6 +228,13 @@ export default function Home() {
 
   // Render Logic
   const renderContent = () => {
+    // 0. Portal View: Immersive Entry
+    if (activeTab === 'portal') {
+      return (
+        <DreamPortal onActivate={handlePortalActivate} />
+      );
+    }
+
     // 1. Home View: Input Only
     if (activeTab === 'home') {
       return (
@@ -205,7 +254,16 @@ export default function Home() {
       );
     }
 
-    // 2. Persona View
+    // 2. Community View
+    if (activeTab === 'community') {
+      return (
+        <div className="animate-in fade-in slide-in-from-right duration-500">
+          <CommunityFeed />
+        </div>
+      );
+    }
+
+    // 3. Persona View
     if (activeTab === 'persona') {
       return (
         <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-right duration-500">
@@ -262,6 +320,15 @@ export default function Home() {
           {!loading.analyze && analysis && (
             <div className="space-y-8">
               <AnalysisResult analysis={analysis} />
+              <div className="flex justify-center">
+                <ShareButton
+                  dreamId={currentRecordId}
+                  dream={dream}
+                  analysis={analysis}
+                  imageUrl={imageUrl}
+                  onNavigateCommunity={() => setActiveTab('community')}
+                />
+              </div>
               <DreamMedia
                 imageUrl={imageUrl}
                 videoUrl={videoUrl}
@@ -310,8 +377,9 @@ export default function Home() {
     <main className="min-h-screen relative overflow-x-hidden selection:bg-purple-500/30 selection:text-purple-200">
       <StarField />
 
-      {/* Top Right Navigation */}
-      <nav className="absolute top-0 right-0 p-6 md:p-8 z-50 flex gap-2 md:gap-4 overflow-x-auto max-w-full">
+      {/* Top Right Navigation - hidden in portal mode */}
+      {activeTab !== 'portal' && (
+        <nav className="absolute top-0 right-0 p-6 md:p-8 z-50 flex gap-2 md:gap-4 overflow-x-auto max-w-full">
         <button
           onClick={() => setActiveTab('home')}
           className={`px-4 py-2 rounded-full text-sm backdrop-blur-md transition-all duration-300 whitespace-nowrap ${activeTab === 'home'
@@ -340,8 +408,25 @@ export default function Home() {
           <SparklesIcon className="w-3 h-3" />
           人格画像
         </button>
+        <button
+          onClick={() => setActiveTab('community')}
+          className={`px-4 py-2 rounded-full text-sm backdrop-blur-md transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${activeTab === 'community'
+            ? 'bg-purple-500/30 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] ring-1 ring-purple-400/50'
+            : 'bg-indigo-950/20 text-indigo-300/60 hover:bg-indigo-900/40 hover:text-indigo-200'
+            }`}
+        >
+          <Globe className="w-3 h-3" />
+          星网
+        </button>
       </nav>
+      )}
 
+      {/* Portal mode: full screen, no header/footer */}
+      {activeTab === 'portal' ? (
+        <div className="relative z-10 flex items-center justify-center min-h-screen">
+          {renderContent()}
+        </div>
+      ) : (
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 pb-40">
 
         {/* Header - Compact on Layouts other than Home? Or keep consistent? 
@@ -386,6 +471,18 @@ export default function Home() {
           <p className="opacity-60">© 2026 梦语 Dream Whisper</p>
         </footer>
       </div>
+      )}
+
+      {/* Portal -> Home 全屏渐变遮罩 */}
+      {portalFading && (
+        <div
+          className="fixed inset-0 z-[80] pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, #4b0082, #0d0b26 60%)',
+            animation: 'portalFadeOut 1.8s ease-in-out forwards',
+          }}
+        />
+      )}
     </main>
   );
 }

@@ -39,7 +39,17 @@ export default function DreamInput({ value, onChange, onSubmit, loading }: Dream
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: initialMessages }),
             });
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch (jsonError) {
+                console.error('JSON解析错误:', jsonError);
+                console.error('响应状态:', res.status);
+                console.error('响应头:', [...res.headers.entries()]);
+                const text = await res.text();
+                console.error('响应内容:', text.substring(0, 200) + '...');
+                throw new Error(`服务器返回了无效的响应格式。状态码: ${res.status}`);
+            }
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
         } catch (err) {
             console.error(err);
@@ -62,7 +72,17 @@ export default function DreamInput({ value, onChange, onSubmit, loading }: Dream
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: newMessages }),
             });
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch (jsonError) {
+                console.error('JSON解析错误:', jsonError);
+                console.error('响应状态:', res.status);
+                console.error('响应头:', [...res.headers.entries()]);
+                const text = await res.text();
+                console.error('响应内容:', text.substring(0, 200) + '...');
+                throw new Error(`服务器返回了无效的响应格式。状态码: ${res.status}`);
+            }
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
         } catch (err) {
             console.error(err);
